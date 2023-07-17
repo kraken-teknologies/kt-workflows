@@ -74,11 +74,11 @@ jobs:
         run: |
           echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
-        #Azure Login
-      - name: Azure Login Service Princpal
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+#        #Azure Login
+#      - name: Azure Login Service Princpal
+#        uses: azure/login@v1
+#        with:
+#          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
         #terragrunt install
       - name: Setup Terragrunt v0.48.1
@@ -106,6 +106,10 @@ jobs:
       - name: Terragrunt Execute
         env:
           TG_ACTION: ${{ env.tg_action }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
         working-directory: ${{ inputs.root_directory }}
         run: |
           TF_LOG=${{ inputs.tf_log_setting }} terragrunt run-all ${{ env.TG_ACTION }} --terragrunt-non-interactive --terragrunt-include-external-dependencies 
