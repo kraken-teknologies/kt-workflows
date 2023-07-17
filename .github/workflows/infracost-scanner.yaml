@@ -1,0 +1,44 @@
+# The GitHub Actions docs (https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#on)
+# describe other options for 'on', 'pull_request' is a good default.
+on:
+  workflow_dispatch:
+    inputs:
+      scan_directory:
+        description: Directory where to run scan
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      scan_directory:
+        description: Directory where to run scan
+        required: true
+        type: string
+
+jobs:
+  infracost:
+    name: Infracost
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+
+      - name: Setup Infracost
+        uses: infracost/actions/setup@v2
+        # See https://github.com/infracost/actions/tree/master/setup for other inputs
+        # If you can't use this action, see Docker images in https://infracost.io/cicd
+        with:
+          api-key: ${{ secrets.INFRACOST_API_KEY }}
+
+      # Checkout the base branch of the pull request (e.g. main/master).
+      - name: Checkout base branch
+        uses: actions/checkout@v3
+
+      # Generate Infracost JSON file as the baseline.
+      - name: Generate Infracost cost estimate baseline
+        run: |
+          infracost breakdown --path=${{ inputs.scan_directory }} \
+#                              --format=json \
+#                              --out-file=/tmp/infracost-base.json
+
+

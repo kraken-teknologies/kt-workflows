@@ -5,10 +5,6 @@ name: rwfls-checkov-scan
 on:
   workflow_dispatch:
     inputs:
-      runner_label:
-        description: Distinct or Generic Label for runner selection
-        required: true
-        type: string
       scan_directory:
         description: Directory where to run scan
         required: true
@@ -29,10 +25,6 @@ on:
         type: boolean
   workflow_call:
     inputs:
-      runner_label:
-        description: Distinct or Generic Label for runner selection
-        required: true
-        type: string
       scan_directory:
         description: Directory where to run scan
         required: true
