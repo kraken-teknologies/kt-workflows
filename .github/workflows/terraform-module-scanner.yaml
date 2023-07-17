@@ -46,17 +46,9 @@ on:
         required: false
         type: boolean
 jobs:
-  set-label:
-    runs-on: [self-hosted, linux, x64]
-    outputs:
-      runner_label: ${{ steps.set-runner.outputs.runner_label }}
-    steps:
-      - id: set-runner
-        run: echo "runner_label=${{ inputs.runner_label }}" >> $GITHUB_OUTPUT
 
   checkov-job:
-    runs-on: ${{ needs.set-label.outputs.runner_label }}
-    needs: set-label
+    runs-on: [ ubuntu-latest ]
     name: checkov-action
     steps:
       - name: Checkout Repo
@@ -72,6 +64,3 @@ jobs:
           output_format: sarif # optional: the output format, one of: cli, json, junitxml, github_failed_only, or sarif. Default: sarif
           download_external_modules: true # optional: download external terraform modules from public git repositories and terraform registry
           log_level: WARNING # optional: set log level. Default WARNING, DEBUG for all output
-
-      - name: Debug Dir
-        run: ls -la
