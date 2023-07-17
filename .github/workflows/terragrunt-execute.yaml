@@ -53,7 +53,7 @@ concurrency:
 jobs:
 
   terragrunt_execute:
-    runs-on: [ ubunut-latest ]
+    runs-on: [ ubuntu-latest ]
     steps:
 
       - name: Check For Destroy Action
