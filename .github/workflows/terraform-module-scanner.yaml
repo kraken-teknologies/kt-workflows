@@ -1,5 +1,6 @@
 # Description:
 # This pipeline will scan multiple frameworks by checkov for security and best practices
+# More Information about checkov https://www.checkov.io/7.Scan%20Examples/Terraform.html
 name: rwfls-checkov-scan
 on:
   workflow_dispatch:
