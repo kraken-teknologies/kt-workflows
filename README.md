@@ -8,30 +8,23 @@ Requirements:
 In order to use you only need to import the "workflow_call" setup in an action in your repo.
 Example:
 ```yaml
-name: checkov-scan
+name: Infracost State Scan
+
 on:
   workflow_dispatch:
   push:
     branches:
       - 'main'
-jobs:
-  checkov-job:
-    runs-on: ubuntu-latest
-    name: checkov-action
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v3
+    paths:
+      - 'foundations/state/**'
 
-      - name: Run Checkov action
-        id: checkov
-        uses: bridgecrewio/checkov-action@master
-        with:
-          directory: .
-          soft_fail: true # optional: do not return an error code if there are failed checks
-          framework: terraform # optional: run only on a specific infrastructure {cloudformation,terraform,kubernetes,all}
-          output_format: sarif # optional: the output format, one of: cli, json, junitxml, github_failed_only, or sarif. Default: sarif
-          download_external_modules: true # optional: download external terraform modules from public git repositories and terraform registry
-          log_level: WARNING # optional: set log level. Default WARNING, DEBUG for all output
+jobs:
+  run-infracost-scanner:
+    name: Demo Infracost State Scan
+    secrets: inherit
+    uses: kraken-teknologies/kt-workflows/.github/workflows/infracost-scanner.yaml@main
+    with:
+      scan_directory: foundations/state
 ```
 # Naming
 Cloud Specific Items:

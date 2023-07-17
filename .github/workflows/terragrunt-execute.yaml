@@ -1,0 +1,114 @@
+# Description:
+# This pipeline will execute terragrunt from root location with a default of plan only
+name: terragrunt-execute
+on:
+  workflow_dispatch:
+    inputs:
+      terragrunt_action:
+        description: Name of ECR Repo to push to
+        type: string
+        required: true
+        default: "plan"
+      root_directory:
+        description: Terragrunt Foundation Root Directory
+        type: string
+        required: true
+      tf_log_setting:
+        description: TF_LOG Environment setting
+        type: string
+        required: false
+        default: "ERROR"
+      concurrency_group:
+        description: Concurrency grouping
+        type: string
+        required: false
+        default: "terragrunt"
+
+  workflow_call:
+    inputs:
+      terragrunt_action:
+        description: Name of ECR Repo to push to
+        type: string
+        required: true
+        default: "plan"
+      root_directory:
+        description: Terragrunt Foundation Root Directory
+        type: string
+        required: true
+      tf_log_setting:
+        description: TF_LOG Environment setting
+        type: string
+        required: false
+        default: "ERROR"
+      concurrency_group:
+        description: Concurrency grouping
+        type: string
+        required: false
+        default: "terragrunt"
+
+
+concurrency:
+  group: ${{ inputs.concurrency_group }}
+
+jobs:
+
+  terragrunt_execute:
+    runs-on: [ ubunut-latest ]
+    steps:
+
+      - name: Check For Destroy Action
+        if: ${{ inputs.terragrunt_action  == 'destroy' }}
+        run: |
+          echo "tg_action=plan" >> $GITHUB_ENV
+          echo "Currently Destroy is not a permitted action in this workflow changing action to plan"
+
+      - name: Set Terragrunt Action
+        if: ${{  inputs.terragrunt_action  != 'destroy' }}
+        run: |
+          echo "tg_action=${{ inputs.terragrunt_action }}" >> $GITHUB_ENV
+
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Set Git Hash
+        run: |
+          echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+        #Azure Login
+      - name: Azure Login Service Princpal
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+        #terragrunt install
+      - name: Setup Terragrunt v0.48.1
+        run: |
+          sudo wget -q -O /bin/terragrunt "https://github.com/gruntwork-io/terragrunt/releases/download/v0.48.1/terragrunt_linux_amd64"
+          sudo chmod +x /bin/terragrunt
+          terragrunt -v
+
+      - name: Verify Terragrunt Version
+        run: terragrunt --version
+
+      - name: Setup Terraform v1.3.3
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.3.3
+          terraform_wrapper: false
+          #Possible issues if true with terragrunt
+
+      - name: Verify Terraform version
+        run: terraform --version
+
+      - name: Verify Terraform wrapper path
+        run: which terraform
+
+      - name: Terragrunt Execute
+        env:
+          TG_ACTION: ${{ env.tg_action }}
+        working-directory: ${{ inputs.root_directory }}
+        run: |
+          TF_LOG=${{ inputs.tf_log_setting }} terragrunt run-all ${{ env.TG_ACTION }} --terragrunt-non-interactive --terragrunt-include-external-dependencies 
+
+
+
